@@ -4,7 +4,6 @@ jobs:
   build:
     runs-on: macos-latest
     steps:
-      # 升級為 v4
       - uses: actions/checkout@v4
         
       - name: Build unsigned WDA
@@ -21,11 +20,15 @@ jobs:
       - name: Package IPA
         run: |
           mkdir -p Payload
-          # 如果路徑略有不同，先強制確保編譯產出存在再複製
-          cp -r build/Release-iphoneos/WebDriverAgentRunner-Runner.app Payload/
+          # 動態搜尋整個主機，找出剛剛熱騰騰編譯完的 WebDriverAgentRunner-Runner.app
+          APP_PATH=$(find ~/Library/Developer/Xcode/DerivedData -name "WebDriverAgentRunner-Runner.app" -type d | head -n 1)
+          
+          # 將找到的 app 複製進 Payload 資料夾
+          cp -r "$APP_PATH" Payload/
+          
+          # 打包並壓縮成 ipa
           zip -r WebDriverAgentRunner.ipa Payload
           
-      # 升級為 v4
       - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
